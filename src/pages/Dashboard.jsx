@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Topbar from '../components/Topbar'
-import { licencias as licenciasApi, dashboard as dashboardApi } from '../services/api'
 import { formatFecha, iniciales, TIPOS_LICENCIA } from '../utils/vacaciones'
 
 // Datos de ejemplo — reemplazar con llamadas reales a la API
