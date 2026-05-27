@@ -63,8 +63,9 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sidebar);
   min-width: 0;
+  overflow: hidden;
 }
 
 .page-content {
@@ -190,8 +191,8 @@ textarea {
   width: 100%;
   font-family: inherit;
   transition: border-color 0.15s, box-shadow 0.15s;
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
 }
 input:focus, select:focus, textarea:focus {
   outline: none;
@@ -394,8 +395,11 @@ tbody tr:hover td { background: #f9f9f8; }
 
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
+  .sidebar { display: none; }
   .main-content { margin-left: 0; }
   .form-row, .two-col { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .page-content { padding: 1rem; }
+  select, input { width: 100%; }
+  .turno-grid { grid-template-columns: repeat(4, 1fr); }
 }

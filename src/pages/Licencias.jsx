@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
-import { licencias as licenciasApi, empleados as empleadosApi } from '../services/api'
+import { licencias, FORM_IDS } from '../services/api'
 import { TIPOS_LICENCIA, calcularDiasHabiles, calcularDiasCorridos, formatFecha } from '../utils/vacaciones'
 
-const MOCK_EMPLEADOS = [
+/*const MOCK_EMPLEADOS = [
   { id:1, nombre:'E. Zarate' },
   { id:2, nombre:'F. Perla' },
   { id:3, nombre:'M. Ducal' },
@@ -16,7 +16,7 @@ const MOCK_LICENCIAS = [
   { id:11, empleadoNombre:'F. Perla', tipo:'enfermedad', desde:'2026-05-18', hasta:'2026-05-21', estado:'aprobada',  dias:4  },
   { id:12, empleadoNombre:'M. Ducal',   tipo:'vacaciones', desde:'2026-06-01', hasta:'2026-06-15', estado:'pendiente', dias:10 },
   { id:13, empleadoNombre:'I. Lamas',    tipo:'enfermedad', desde:'2026-05-18', hasta:'2026-05-20', estado:'pendiente', dias:3  },
-]
+]*/
 
 const ESTADO_BADGE = {
   aprobada:  'badge-act',
@@ -37,28 +37,42 @@ const FORM_EMPTY = {
 }
 
 export default function Licencias() {
-  const [empleados, setEmpleados] = useState(MOCK_EMPLEADOS)
-  const [historial, setHistorial] = useState(MOCK_LICENCIAS)
+  const [empleados, setEmpleados] = useState([])
+  const [historial, setHistorial] = useState([])
   const [form, setForm] = useState(FORM_EMPTY)
   const [enviando, setEnviando] = useState(false)
   const [alerta, setAlerta] = useState(null)
 
-  // Descomentar para datos reales:
-  // useEffect(() => {
-  //   empleadosApi.list().then(setEmpleados)
-  //   licenciasApi.list().then(setHistorial)
-  // }, [])
-
+  useEffect(() => {
+  Promise.all([
+    licencias.list(FORM_IDS.licenciaAnual),
+    licencias.list(FORM_IDS.licenciaExtraordinaria),
+    licencias.list(FORM_IDS.diasEstudio),
+  ]).then(([anual, extraordinaria, estudio]) => {
+    const todas = [
+      ...anual.items,
+      ...extraordinaria.items,
+      ...estudio.items,
+    ]
+    setHistorial(todas)
+  })
+}, [])
   const tipoSeleccionado = TIPOS_LICENCIA.find(t => t.value === form.tipo)
   const requiereCert = tipoSeleccionado?.requiereCert || false
 
-  const diasInfo = (() => {
-    if (!form.desde || !form.hasta) return null
-    if (new Date(form.hasta) < new Date(form.desde)) return { error: 'La fecha de fin debe ser posterior al inicio.' }
-    const habiles  = calcularDiasHabiles(form.desde, form.hasta)
-    const corridos = calcularDiasCorridos(form.desde, form.hasta)
-    return { habiles, corridos }
-  })()
+const hoy = new Date().toISOString().split('T')[0]
+const maxFecha = new Date(new Date().setFullYear(new Date().getFullYear() + 2)).toISOString().split('T')[0]
+
+const diasInfo = (() => {
+  if (!form.desde || !form.hasta) return null
+  if (form.desde < hoy) return { error: 'La fecha de inicio no puede ser en el pasado.' }
+  if (form.hasta > maxFecha) return { error: 'La fecha no puede ser mayor a 2 años desde hoy.' }
+  if (new Date(form.hasta) < new Date(form.desde)) return { error: 'La fecha de fin debe ser posterior al inicio.' }
+  const habiles  = calcularDiasHabiles(form.desde, form.hasta)
+  const corridos = calcularDiasCorridos(form.desde, form.hasta)
+  if (habiles > 365) return { error: 'La licencia no puede superar 365 días hábiles.' }
+  return { habiles, corridos }
+})()
 
   function handleChange(e) {
     const { name, value, files } = e.target
@@ -138,11 +152,13 @@ export default function Licencias() {
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label" htmlFor="desde">Fecha de inicio</label>
-                <input type="date" id="desde" name="desde" value={form.desde} onChange={handleChange} required />
+                <input type="date" id="desde" name="desde" value={form.desde} onChange={handleChange}
+  min={hoy} max={maxFecha} required />
               </div>
               <div className="form-group">
                 <label className="form-label" htmlFor="hasta">Fecha de fin</label>
-                <input type="date" id="hasta" name="hasta" value={form.hasta} onChange={handleChange} required />
+                <input type="date" id="hasta" name="hasta" value={form.hasta} onChange={handleChange}
+  min={form.desde || hoy} max={maxFecha} required />
               </div>
             </div>
 

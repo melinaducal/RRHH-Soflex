@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
-import { calendario as calendarioApi } from '../services/api'
 import { formatFecha, iniciales, TIPOS_LICENCIA, MESES } from '../utils/vacaciones'
+import { licencias, FORM_IDS } from '../services/api'
 
-const MOCK_AUSENCIAS = [
+/*const MOCK_AUSENCIAS = [
   { id:1, nombre:'E. Zarate',     tipo:'vacaciones', desde:'2026-05-12', hasta:'2026-05-30' },
   { id:2, nombre:'F. Perla',   tipo:'maternidad', desde:'2026-04-01', hasta:'2026-08-15' },
   { id:3, nombre:'M. Ducal',tipo:'enfermedad', desde:'2026-05-18', hasta:'2026-05-21' },
   { id:4, nombre:'I. Lamas',   tipo:'vacaciones', desde:'2026-05-19', hasta:'2026-05-25' },
   { id:5, nombre:'J. Sotelo',    tipo:'estudio',    desde:'2026-05-18', hasta:'2026-05-18' },
-]
+]*/
 
 function tipoBadge(tipo) {
   return TIPOS_LICENCIA.find(t => t.value === tipo)?.badge || 'badge-otro'
@@ -44,15 +44,31 @@ function diasConEvento(ausencias, anio, mes) {
 export default function Calendario() {
   const hoy = new Date()
   const [calDate, setCalDate] = useState(new Date(hoy.getFullYear(), hoy.getMonth(), 1))
-  const [ausencias, setAusencias] = useState(MOCK_AUSENCIAS)
+  const [ausencias, setAusencias] = useState([])
   const [diaSeleccionado, setDiaSeleccionado] = useState(null)
 
   // Descomentar para datos reales:
-  // useEffect(() => {
-  //   calendarioApi.ausencias(calDate.getFullYear(), calDate.getMonth() + 1)
-  //     .then(setAusencias)
-  // }, [calDate])
-
+useEffect(() => {
+  Promise.all([
+    licencias.list(FORM_IDS.licenciaAnual),
+    licencias.list(FORM_IDS.licenciaExtraordinaria),
+    licencias.list(FORM_IDS.diasEstudio),
+  ]).then(([anual, extraordinaria, estudio]) => {
+    const todas = [
+      ...anual.items,
+      ...extraordinaria.items,
+      ...estudio.items,
+    ]
+    // Filtramos por el mes del calendario
+    const delMes = todas.filter(l => {
+      const valores = JSON.parse(l.Valores)
+      const desde = new Date(valores.fecha_desde)
+      return desde.getMonth() === calDate.getMonth() &&
+             desde.getFullYear() === calDate.getFullYear()
+    })
+    setAusencias(delMes)
+  })
+}, [calDate])
   const anio = calDate.getFullYear()
   const mes  = calDate.getMonth()
   const eventDias = diasConEvento(ausencias, anio, mes)

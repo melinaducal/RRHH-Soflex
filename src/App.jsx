@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar      from './components/Sidebar'
+import Topbar       from './components/Topbar'
 import Dashboard    from './pages/Dashboard'
 import Calendario   from './pages/Calendario'
 import Licencias    from './pages/Licencias'
@@ -9,11 +11,14 @@ import NuevoUsuario from './pages/NuevoUsuario'
 import './styles.css'
 
 export default function App() {
+  const [sidebarAbierto, setSidebarAbierto] = useState(false)
+
   return (
     <BrowserRouter>
       <div className="app-shell">
-        <Sidebar />
+        <Sidebar abierto={sidebarAbierto} onCerrar={() => setSidebarAbierto(false)} />
         <div className="main-content">
+          <Topbar onMenuClick={() => setSidebarAbierto(v => !v)} />
           <Routes>
             <Route path="/"               element={<Dashboard />} />
             <Route path="/calendario"     element={<Calendario />} />

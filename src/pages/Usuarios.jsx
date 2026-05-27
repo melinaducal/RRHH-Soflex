@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Topbar from '../components/Topbar'
-import { empleados as empleadosApi } from '../services/api'
+import { licencias, FORM_IDS } from '../services/api'
 import { calcularAntiguedad, diasVacacionesLCT, iniciales, formatFecha, ROLES } from '../utils/vacaciones'
 
-const MOCK_EMPLEADOS = [
+/*const MOCK_EMPLEADOS = [
   { id:1, nombre:'E. Zarate',     ingreso:'2018-03-10', sector:'Desarrollo', rol:'jefe',    vacUsados:14 },
   { id:2, nombre:'F. Perla',   ingreso:'2025-07-01', sector:'QA',  rol:'QA',    vacUsados:0  },
-  { id:3, nombre:'M. Ducal',ingreso:'2025-03-13', sector:'Administracion',   rol:'secretaria',  vacUsados:10 },
+  { id:3, nombre:'M. Ducal',ingreso:'2023-03-13', sector:'Administracion',   rol:'secretaria',  vacUsados:10 },
   { id:4, nombre:'I. Lamas',   ingreso:'2024-01-15', sector:'Desarrollo',  rol:'empleado',    vacUsados:5  },
   { id:5, nombre:'M.F. Gomez',    ingreso:'2020-09-03', sector:'Administracion', rol:'rrhh',        vacUsados:7  },
   { id:6, nombre:'J. Sotelo',  ingreso:'2023-06-20', sector:'Desarrollo',   rol:'empleado',    vacUsados:0  },
-]
+]*/
 
 function rolLabel(rol) {
   return ROLES.find(r => r.value === rol)?.label || rol
@@ -19,13 +19,14 @@ function rolLabel(rol) {
 
 export default function Usuarios() {
   const navigate = useNavigate()
-  const [empleados, setEmpleados] = useState(MOCK_EMPLEADOS)
+  const [empleados, setEmpleados] = useState([])
   const [busqueda, setBusqueda] = useState('')
 
   // Descomentar para datos reales:
-  // useEffect(() => {
-  //   empleadosApi.list().then(setEmpleados)
-  // }, [])
+  useEffect(() => {
+  licencias.list(FORM_IDS.licenciaAnual)
+    .then(data => setEmpleados(data.items))
+}, [])
 
   const filtrados = empleados.filter(e =>
     e.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||

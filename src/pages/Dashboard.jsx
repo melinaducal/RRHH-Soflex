@@ -1,10 +1,11 @@
+import { licencias, FORM_IDS } from '../services/api'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Topbar from '../components/Topbar'
 import { formatFecha, iniciales, TIPOS_LICENCIA } from '../utils/vacaciones'
 
 // Datos de ejemplo — reemplazar con llamadas reales a la API
-const MOCK_RESUMEN = {
+/*const MOCK_RESUMEN = {
   empleadosActivos: 42,
   conLicenciaHoy: 7,
   desgloseLicencias: '4 vacac. · 2 enf. · 1 mat.',
@@ -30,28 +31,29 @@ function tipoLabel(tipo) {
 }
 function tipoBadge(tipo) {
   return TIPOS_LICENCIA.find(t => t.value === tipo)?.badge || 'badge-otro'
-}
+}*/
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const [resumen, setResumen] = useState(MOCK_RESUMEN)
-  const [ausentes, setAusentes] = useState(MOCK_AUSENTES)
-  const [pendientes, setPendientes] = useState(MOCK_PENDIENTES)
+  const [resumen, setResumen] = useState({ empleadosActivos: 0, conLicenciaHoy: 0, desgloseLicencias: '', solicitudesPendientes: 0, turnosSemana: 0 })
+  const [ausentes, setAusentes] = useState([])
+  const [pendientes, setPendientes] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Descomentar para usar datos reales:
-  // useEffect(() => {
-  //   setLoading(true)
-  //   Promise.all([
-  //     dashboardApi.resumen(),
-  //     licenciasApi.list({ estado: 'aprobada', fecha: new Date().toISOString().split('T')[0] }),
-  //     licenciasApi.list({ estado: 'pendiente' }),
-  //   ]).then(([res, aus, pend]) => {
-  //     setResumen(res)
-  //     setAusentes(aus)
-  //     setPendientes(pend)
-  //   }).finally(() => setLoading(false))
-  // }, [])
+ useEffect(() => {
+  Promise.all([
+    licencias.list(FORM_IDS.licenciaAnual),
+    licencias.list(FORM_IDS.licenciaExtraordinaria),
+    licencias.list(FORM_IDS.diasEstudio),
+  ]).then(([anual, extraordinaria, estudio]) => {
+    const todas = [
+      ...anual.items,
+      ...extraordinaria.items,
+      ...estudio.items,
+    ]
+    setPendientes(todas.filter(l => l.EstadoID === 9))
+  })
+}, [])
 
   async function handleAprobar(id) {
     // await licenciasApi.aprobar(id)

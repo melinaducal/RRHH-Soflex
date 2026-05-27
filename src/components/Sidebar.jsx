@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { auth } from '../services/api'
-
+ 
 const navItems = [
   { to: '/',          icon: 'ti-layout-dashboard', label: 'Inicio',           section: 'Principal' },
   { to: '/calendario',icon: 'ti-calendar',         label: 'Calendario',       section: 'Principal' },
@@ -9,23 +9,23 @@ const navItems = [
   { to: '/usuarios',  icon: 'ti-users',            label: 'Empleados',        section: 'Administración' },
   { to: '/nuevo-usuario', icon: 'ti-user-plus',   label: 'Nuevo empleado',   section: 'Administración' },
 ]
-
+ 
 const sections = ['Principal', 'Administración']
-
+ 
 // Usuario de sesión — reemplazar con contexto de auth real
-const SESSION_USER = { nombre: 'M.F. Gomez', rol: 'RRHH · Admin', iniciales: 'MR' }
-
+const SESSION_USER = { nombre: 'M. Gomez', rol: 'RRHH · Admin', iniciales: 'MG' }
+ 
 export default function Sidebar() {
   return (
     <aside style={{
-      width: 'var(--sidebar-width)',
+      width: 'var(--sidebar)',
       minHeight: '100vh',
       background: '#fff',
       borderRight: '0.5px solid rgba(0,0,0,0.1)',
       display: 'flex',
       flexDirection: 'column',
       padding: '1.5rem 0',
-      position: 'fixed',
+      position: 'relative',
       top: 0, left: 0,
       zIndex: 100,
     }}>
@@ -45,7 +45,7 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
-
+ 
       {/* Nav */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
         {sections.map(section => (
@@ -80,7 +80,7 @@ export default function Sidebar() {
           </div>
         ))}
       </div>
-
+ 
       {/* Footer user */}
       <div style={{ padding: '1rem 1.25rem 0', borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: '1rem' }}>

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
-import { turnos as turnosApi, empleados as empleadosApi } from '../services/api'
+import { licencias, FORM_IDS } from '../services/api'
 import { TURNOS_TIPOS, DIAS_SEMANA } from '../utils/vacaciones'
 
-const MOCK_EMPLEADOS = [
+/*const MOCK_EMPLEADOS = [
   { id:1, nombre:'A. López',     sector:'Producción' },
   { id:2, nombre:'J. Fernández', sector:'Depósito' },
   { id:3, nombre:'P. Romero',    sector:'Logística' },
@@ -16,7 +16,7 @@ const MOCK_TURNOS = {
   2: { '2026-W21': ['franco','manana','manana','tarde','tarde','noche','franco'] },
   3: { '2026-W21': ['tarde','franco','manana','manana','franco','tarde','noche'] },
   4: { '2026-W21': ['noche','noche','franco','manana','tarde','tarde','franco'] },
-}
+}*/
 
 function semanaLabel(semana) {
   // semana = '2026-W21'
@@ -57,20 +57,26 @@ export default function Turnos() {
   const semHoy = getISOWeek(hoy)
   const semanaDefault = `${anioHoy}-W${String(semHoy).padStart(2,'0')}`
 
-  const [empleados, setEmpleados] = useState(MOCK_EMPLEADOS)
+  const [empleados, setEmpleados] = useState([])
   const [empId, setEmpId] = useState(1)
   const [semana, setSemana] = useState(semanaDefault)
-  const [turnosData, setTurnosData] = useState(MOCK_TURNOS)
+  const [turnosData, setTurnosData] = useState({})
 
   // Descomentar para datos reales:
-  // useEffect(() => {
-  //   empleadosApi.list({ modalidad: 'rotativo' }).then(setEmpleados)
-  // }, [])
-  // useEffect(() => {
-  //   turnosApi.list({ empleadoId: empId, semana }).then(data => {
-  //     setTurnosData(prev => ({ ...prev, [empId]: { ...prev[empId], [semana]: data.turnos } }))
-  //   })
-  // }, [empId, semana])
+   useEffect(() => {
+  licencias.list(FORM_IDS.modalidadTrabajo)
+    .then(data => {
+      const empleadosDelBack = data.items.map(item => {
+        const valores = JSON.parse(item.Valores)
+        return {
+          id: item.FormularioValoresID,
+          nombre: item.usuario || '',
+          sector: valores.modalidad_trabajo || '',
+        }
+      })
+      setEmpleados(empleadosDelBack)
+    })
+}, [])
 
   const turnosSemana = turnosData[empId]?.[semana] || Array(7).fill(null)
   const diasLabels = diasSemana(semana)
