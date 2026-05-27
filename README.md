@@ -1,6 +1,6 @@
-# LicenciasPro — Frontend
+# RRHH Soflex — Frontend
 
-Sistema de gestión de licencias y turnos rotativos para RRHH.
+Sistema de gestión de licencias y turnos rotativos para RRHH, desarrollado para Soflex.
 
 ## Stack
 
@@ -24,23 +24,29 @@ La app corre en `http://localhost:3000`.
 
 ## Configuración del backend
 
-En `vite.config.js` está el proxy configurado:
+La URL base del backend está en `src/services/api.js`:
 
 ```js
-proxy: {
-  '/api': {
-    target: 'http://localhost:8000', // ← cambiá por la URL de tu backend
-    changeOrigin: true,
-  },
-},
+const BASE_URL = 'http://localhost:8010/proxy'
 ```
 
-Si el backend está en otro dominio (producción), podés definir la variable de entorno:
+---
+
+## Proxy CORS (desarrollo local)
+
+El backend requiere un proxy para evitar errores de CORS en desarrollo. Instalarlo una sola vez:
 
 ```bash
-# .env
-VITE_API_URL=https://tu-backend.com/api
+npm install -g local-cors-proxy
 ```
+
+Levantarlo antes de usar la app:
+
+```bash
+lcp --proxyUrl https://devptt.soflex.com.ar
+```
+
+Esto crea un proxy en `http://localhost:8010/proxy` que redirige todas las llamadas al servidor real.
 
 ---
 
@@ -48,56 +54,58 @@ VITE_API_URL=https://tu-backend.com/api
 
 ```
 src/
-├── App.jsx                 # Router principal
+├── App.jsx                 # Router principal y control del sidebar
+├── AppContext.jsx          # Contexto global (estado del sidebar)
 ├── main.jsx                # Entry point
 ├── styles.css              # Estilos globales y design tokens
 ├── components/
-│   ├── Sidebar.jsx         # Navegación lateral
+│   ├── Sidebar.jsx         # Navegación lateral con hamburguesa mobile
 │   └── Topbar.jsx          # Barra superior por página
 ├── pages/
 │   ├── Dashboard.jsx       # Resumen del día + aprobaciones
 │   ├── Calendario.jsx      # Calendario mensual de ausencias
 │   ├── Licencias.jsx       # Formulario + historial de licencias
+│   ├── Login.jsx           # Pantalla de login
 │   ├── Turnos.jsx          # Vista semanal de turnos rotativos
 │   ├── Usuarios.jsx        # Listado de empleados
 │   └── NuevoUsuario.jsx    # Alta de empleado
 ├── services/
-│   └── api.js              # Capa REST: empleados, licencias, turnos, auth
+│   └── api.js              # Capa REST — autenticación y formularios
 └── utils/
     └── vacaciones.js       # Cálculo LCT, días hábiles, helpers
 ```
 
 ---
 
-## Conectar con el backend
+## Autenticación
 
-Todos los datos de ejemplo (mock) están en cada página. Para activar las
-llamadas reales, descomentá los bloques `useEffect` marcados con:
-
-```js
-// Descomentar para datos reales:
-// useEffect(() => { ... }, [])
-```
-
-Y eliminá la línea `setEstado(MOCK_...)` correspondiente.
+El login usa **Basic Auth** contra el endpoint `/auth/sesion`. El servidor devuelve un JWT que se guarda en `sessionStorage` y se manda como `Bearer Token` en todos los requests siguientes.
 
 ---
 
-## Endpoints esperados del backend
+## Endpoints del backend
 
-| Método | URL                          | Descripción                       |
-|--------|------------------------------|-----------------------------------|
-| GET    | /api/empleados               | Lista de empleados                |
-| POST   | /api/empleados               | Crear empleado                    |
-| GET    | /api/licencias               | Lista (filtros: estado, fecha)    |
-| POST   | /api/licencias               | Crear solicitud                   |
-| PATCH  | /api/licencias/:id/aprobar   | Aprobar solicitud                 |
-| PATCH  | /api/licencias/:id/rechazar  | Rechazar solicitud                |
-| GET    | /api/turnos                  | Turnos (filtros: empleadoId, semana) |
-| POST   | /api/turnos                  | Crear/actualizar turno            |
-| GET    | /api/dashboard/resumen       | Métricas del día                  |
-| GET    | /api/calendario/ausencias    | Ausencias por mes                 |
-| POST   | /api/auth/login              | Login — devuelve JWT              |
+| Método | URL | Descripción |
+|--------|-----|-------------|
+| POST | /auth/sesion | Login con Basic Auth — devuelve JWT |
+| GET | /formularios/formularios | Lista de formularios disponibles |
+| GET | /formularios/formulario-valores/paginado | Licencias cargadas (filtrar por formID) |
+| POST | /formularios/formulario-valores | Crear nueva licencia |
+| PUT | /formularios/formulario-valores | Modificar licencia |
+| DELETE | /formularios/formulario-valores | Eliminar licencia |
+| POST | /formularios/formulario-archivo | Subir certificado médico |
+| GET | /formularios/formulario-archivos | Descargar certificado |
+
+---
+
+## IDs de formularios
+
+| FormularioID | Tipo |
+|---|---|
+| 87 | Solicitud Licencia Anual |
+| 89 | Solicitud Licencia Extraordinaria |
+| 90 | Solicitud Días por Estudio |
+| 91 | Modalidad de Trabajo |
 
 ---
 
@@ -105,12 +113,12 @@ Y eliminá la línea `setEstado(MOCK_...)` correspondiente.
 
 Implementado en `src/utils/vacaciones.js`:
 
-| Antigüedad      | Días hábiles |
-|-----------------|-------------|
-| Menos de 5 años | 14          |
-| 5 a 9 años      | 21          |
-| 10 a 19 años    | 28          |
-| 20 años o más   | 35          |
+| Antigüedad | Días hábiles |
+|---|---|
+| Menos de 5 años | 14 |
+| 5 a 9 años | 21 |
+| 10 a 19 años | 28 |
+| 20 años o más | 35 |
 
 ---
 
@@ -120,5 +128,4 @@ Implementado en `src/utils/vacaciones.js`:
 npm run build
 ```
 
-Genera la carpeta `dist/` lista para deployar en cualquier hosting estático
-(Nginx, Vercel, Netlify, S3, etc.).
+Genera la carpeta `dist/` lista para deployar en cualquier hosting estático (Nginx, Vercel, Netlify, etc.).
