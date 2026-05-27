@@ -29,7 +29,7 @@ En `vite.config.js` está el proxy configurado:
 ```js
 proxy: {
   '/api': {
-    target: 'http://localhost:8000', // ← cambiar por la URL de backend
+    target: 'http://localhost:8000', // ← cambiá por la URL de tu backend
     changeOrigin: true,
   },
 },
