@@ -8,17 +8,18 @@ import Licencias    from './pages/Licencias'
 import Turnos       from './pages/Turnos'
 import Usuarios     from './pages/Usuarios'
 import NuevoUsuario from './pages/NuevoUsuario'
+import { AppContext } from './AppContext'
 import './styles.css'
 
 export default function App() {
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
 
   return (
+  <AppContext.Provider value={{ onMenuClick: () => setSidebarAbierto(v => !v) }}>
     <BrowserRouter>
       <div className="app-shell">
         <Sidebar abierto={sidebarAbierto} onCerrar={() => setSidebarAbierto(false)} />
         <div className="main-content">
-          <Topbar onMenuClick={() => setSidebarAbierto(v => !v)} />
           <Routes>
             <Route path="/"               element={<Dashboard />} />
             <Route path="/calendario"     element={<Calendario />} />
@@ -30,5 +31,6 @@ export default function App() {
         </div>
       </div>
     </BrowserRouter>
-  )
+  </AppContext.Provider>
+)
 }

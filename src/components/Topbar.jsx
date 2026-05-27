@@ -1,6 +1,9 @@
-import { useNavigate } from 'react-router-dom'
+import { AppContext } from '../AppContext.jsx'
+import { useContext } from 'react'
 
 export default function Topbar({ title, actions }) {
+  const { onMenuClick } = useContext(AppContext)
+
   return (
     <header style={{
       height: 'var(--topbar-height)',
@@ -14,7 +17,17 @@ export default function Topbar({ title, actions }) {
       top: 0,
       zIndex: 50,
     }}>
-      <h1 style={{ fontSize: 15, fontWeight: 500 }}>{title}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          className="btn"
+          onClick={onMenuClick}
+          aria-label="Abrir menú"
+          style={{ padding: '6px 8px' }}
+        >
+          <i className="ti ti-menu-2" style={{ fontSize: 20 }} />
+        </button>
+        <h1 style={{ fontSize: 15, fontWeight: 500 }}>{title}</h1>
+      </div>
       {actions && <div className="topbar-actions">{actions}</div>}
     </header>
   )
